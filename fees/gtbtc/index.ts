@@ -14,7 +14,6 @@ const exchangeRateUpdatedAbi = 'event ExchangeRateUpdated(uint256 oldRate, uint2
 
 const fetch = async (_t: number, _c: any, options: FetchOptions) => {
     const dailyFees = options.createBalances();
-    const supplySideRevenue = options.createBalances();
     let growthRate = 0
     const [gtBTCPrice, gtBTCMcap] = await Promise.all([
         getPrices([coingeckoId], 'now'),
@@ -30,7 +29,6 @@ const fetch = async (_t: number, _c: any, options: FetchOptions) => {
     })
     const fees = (growthRate * gtBTCSupply) * 1e2
     dailyFees.add(wbtc, fees, METRIC.STAKING_REWARDS)
-    supplySideRevenue.add(wbtc, fees, METRIC.STAKING_REWARDS)
     return {
         dailyFees,
         dailyRevenue: options.createBalances()
@@ -38,16 +36,16 @@ const fetch = async (_t: number, _c: any, options: FetchOptions) => {
 }
 
 const methodology= {
-    Fees: "Yield generated from staking",
-    SupplySideRevenue: "Staking rewards distributed",
+    Fees: "Rewards generated from staking",
+    Revenue: "No Revenue",
   }
 
 const adapter: SimpleAdapter = {
-  version: 1,
+    version: 1,
     fetch,
     chains: [CHAIN.ETHEREUM],
-  start: '2024-07-07',
-  methodology,
+    start: '2024-08-02',
+    methodology,
 }
 
 export default adapter;
