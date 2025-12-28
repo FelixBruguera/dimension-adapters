@@ -3,12 +3,17 @@ import { Chain, FetchOptions, SimpleAdapter } from "../../adapters/types";
 import * as sdk from "@defillama/sdk";
 import { ethers } from "ethers";
 import coreAssets from "../../helpers/coreAssets.json"
+import { addOneToken } from "../../helpers/prices";
 
 interface chainAddressInterface {
     conditionalTokens: string
     poolFactory: string,
     poolCreatedAbi: string,
     swapAbi: string
+}
+interface poolIface {
+    pool: string,
+    sDaiPosition: string
 }
 
 const chainAddresses : Record<Chain, chainAddressInterface> = {
@@ -35,24 +40,34 @@ async function fetch(options: FetchOptions) {
     const cacheKey = `tvl-adapter-cache/cache/logs/${options.chain}/${poolFactory.toLowerCase()}.json`
     const { logs } = await sdk.cache.readCache(cacheKey, { readFromR2Cache: true})
     const poolCreateIface = new ethers.Interface([poolCreatedAbi])
-    const poolTokens = {}
-    logs?.forEach((log: any) => {
+    const pools: string[] = []
+    const otherTokens: string[] = []
+    const poolsWithTokens = {}
+    logs.forEach((log: any) => {
         const args = poolCreateIface.parseLog(log)?.args
-        poolTokens[args.pool] = args?.token0 === sDai ? "amount0" : "amount1"
+        pools.push(args?.pool)
+        if (args?.token0.toLowerCase() === sDai.toLowerCase()) {
+            otherTokens.push(args.token1)
+            poolsWithTokens[args?.pool.toLowerCase()] = { token0: args.token0, token1: args.token1}
+        }
+        else {
+            otherTokens.push(args?.token0)
+            poolsWithTokens[args?.pool.toLowerCase()] = { token0: args.token0, token1: args.token1}
+        }
     })
-    console.log(poolTokens)
+    const multiTokens = await options.api.multiCall({ abi: "address:multiToken", calls: otherTokens, permitFailure: true})
+    const filteredPools = pools.filter((_, i) => multiTokens[i]?.toLowerCase() === conditionalTokens.toLowerCase())
     const dailyVolume = options.createBalances()
 
     const [splits, merges, swaps] = await Promise.all([
         options.getLogs({ target: conditionalTokens, eventAbi: positionSplit }),
         options.getLogs({ target: conditionalTokens, eventAbi: positionMerge }),
-        options.getLogs({ targets: Object.keys(poolTokens), eventAbi: swapAbi, entireLog: true})
+        options.getLogs({ targets: filteredPools, eventAbi: swapAbi, entireLog: true})
     ])
     splits.concat(merges).forEach(log => dailyVolume.add(log.collateralToken, log.amount))
     swaps.forEach(log => {
-        console.log(log)
-        const sDaiPosition = poolTokens[log.address]
-        dailyVolume.add(sDai, log.parsedLog[sDaiPosition])
+        const { token0, token1 } = poolsWithTokens[log.address.toLowerCase()]
+        addOneToken({ chain: options.chain, balances: dailyVolume, token0, token1, amount0: log.args.amount0, amount1: log.args.amount1 })
     })
 
     return {
