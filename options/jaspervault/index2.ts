@@ -62,9 +62,9 @@ const premiumOracleSignStruct = "(uint256 id,uint256 chainId,uint64 productType,
 const managedOrderStruct = `(address holder,address writer,address recipient,uint256 quantity,uint256 settingsIndex,uint256 productTypeIndex,uint256 oracleIndex,address nftFreeOption,${premiumOracleSignStruct} premiumSign,uint8 optionSourceType,bool liquidationToEOA,uint256 offerID)`
 const optionPremiumEvent = `event OptionPremiun(uint64 _orderID,${managedOrderStruct} _info,uint256 _premiumAmount,uint256 _freePremiumAmount)`
 const premiumEventV1 = "event OptionPremiun (uint8 _orderType, uint64 _orderID, address _writer, address _holder, address _premiumAsset, uint256 _amount)"
-const orderStruct = "(address holder,uint8 liquidateMode,address writer,uint8 lockAssetType,address recipient,address lockAsset,address underlyingAsset,address strikeAsset,uint256 lockAmount,uint256 strikeAmount,uint256 expirationDate,uint256 lockDate,uint256 underlyingNftID,uint256 quantity)"
+const orderStruct = "(address holder,uint16 liquidateMode,address writer,uint16 lockAssetType,address recipient,address lockAsset,address underlyingAsset,address strikeAsset,uint256 lockAmount,uint256 strikeAmount,uint256 expirationDate,uint256 lockDate,uint256 underlyingNftID,uint256 quantity)"
 const addCallOrder = `event AddCallOrder(uint64 _orderId, ${orderStruct} _callOrder, address _holderWallet, address _writerWallet)`
-const addPutOrder = `event AddCallOrder(uint64 _orderId, ${orderStruct} _putOrder, address _holderWallet, address _writerWallet)`
+const addPutOrder = `event AddPutOrder(uint64 _orderId, ${orderStruct} _putOrder, address _holderWallet, address _writerWallet)`
 
 async function fetchV1Logs(options: FetchOptions) {
     const v1Notional = options.createBalances()
@@ -84,6 +84,7 @@ async function fetchV1Logs(options: FetchOptions) {
             eventAbi: addPutOrder
         })
     ])
+    console.log([puts, calls])
     premiumEvents.forEach(log => {
         v1Premium.add(log._premiumAsset, Number(log._amount))
     })
