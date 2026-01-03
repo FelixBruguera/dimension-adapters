@@ -58,7 +58,7 @@ const managedOrderStruct = `(address holder,address writer,address recipient,uin
 const optionPremiumEvent = `event OptionPremiun(uint64 _orderID,${managedOrderStruct} _info,uint256 _premiumAmount,uint256 _freePremiumAmount)`
 
 async function fetch(options: FetchOptions) {
-    const dailyNotionalVolume = options.createBalances()
+  const dailyNotionalVolume = options.createBalances()
   const dailyPremiumVolume = options.createBalances()
   const tokens = contracts[options.chain].map(i => i[0]);
   let decimals = await options.api.multiCall({ abi: 'erc20:decimals', calls: tokens, });
