@@ -323,6 +323,9 @@ const configs: Record<string, Record<string, any>> = {
   'doma-dex-v3': {
     [CHAIN.DOMA]: { factory: '0x2e50b586d5bcD04cb6125E028A6a669f7f3cF1C2', start: '2025-10-19', userFeesRatio: 1, revenueRatio: 0, },
   },
+  "sailfish": {
+    [CHAIN.EDU_CHAIN]: {factory: '0x963A7f4eB46967A9fd3dFbabD354fC294FA2BF5C', userFeesRatio: 1, revenueRatio: 0.5, protocolRevenueRatio: 0.5}
+  },
 }
 
 const optionsMap: Record<string, any> = {
