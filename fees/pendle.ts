@@ -17,6 +17,7 @@ const ABI = {
 type IConfig = {
   [s: string | Chain]: {
     treasury: string;
+    airdropDistributor?: string;
     blacklists?: Array<string>;
   };
 };
@@ -73,10 +74,12 @@ const chainConfig: IConfig = {
     treasury: "0xC328dFcD2C8450e2487a91daa9B75629075b7A43"
   },
   [CHAIN.BERACHAIN]: {
-    treasury: "0xC328dFcD2C8450e2487a91daa9B75629075b7A43"
+    treasury: "0xC328dFcD2C8450e2487a91daa9B75629075b7A43",
+    airdropDistributor: "0x7f6Ca6aA1F2291992E252Fb8E25348c4861C5C25"
   }, 
   [CHAIN.PLASMA]: {
-    treasury: "0xCbcb48e22622a3778b6F14C2f5d258Ba026b05e6"
+    treasury: "0xCbcb48e22622a3778b6F14C2f5d258Ba026b05e6",
+    airdropDistributor: "0x42c706eab26aA8FAcFa4B3f32902bA872AaA10aC"
   },
   [CHAIN.HYPERLIQUID]: {
     treasury: "0x17A191644E750AA24a5ec13A253b9446f4eF178b"
@@ -207,9 +210,10 @@ const fetch = async (options: FetchOptions) => {
 
   // these revenue should be counted in fees too
   // Only track tokens sent from treasury (or team wallet) to the airdrop distributor, matching Pendle's Dune query
+  const distributor = chainConfig[chain].airdropDistributor ?? AIRDROP_DISTRIBUTOR
   const tokenToDistributor = chain === CHAIN.ETHEREUM ? await addTokensReceived({
     options,
-    target: AIRDROP_DISTRIBUTOR,
+    target: distributor,
     fromAddressFilter: chainConfig[chain].treasury,
   }) : options.createBalances()
 
