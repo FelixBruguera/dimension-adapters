@@ -90,16 +90,16 @@ const chainConfig: IConfig = {
   },
   [CHAIN.BERACHAIN]: {
     treasury: "0xCbcb48e22622a3778b6F14C2f5d258Ba026b05e6",
-    usdtAddress: ADDRESSES.berachain.USDT
+    usdtAddress: "0x779Ded0c9e1022225f8E0630b35a9b54bE713736"
   }, 
   [CHAIN.PLASMA]: {
     treasury: "0xCbcb48e22622a3778b6F14C2f5d258Ba026b05e6",
-    usdtAddress: ADDRESSES.plasma.USDT
+    usdtAddress: "0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb"
   },
   [CHAIN.HYPERLIQUID]: {
     treasury: "0xCbcb48e22622a3778b6F14C2f5d258Ba026b05e6",
     airdropFunders: ["0xeea6F790F18563E91b18DF00B89d9f79b2E6761F"],
-    usdtAddress: ADDRESSES.hyperliquid.USDT
+    usdtAddress: "0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb"
   }
 };
 
@@ -234,7 +234,7 @@ const fetch = async (_a: any, _b: any, options: FetchOptions) => {
     })
   // }
 
-  tokenToDistributor.removeTokenBalance(USDT_ETHEREUM) // ignore USDT airdrop
+  tokenToDistributor.removeTokenBalance(chainConfig[chain].usdtAddress) // ignore USDT airdrop
 
   const dailyRevenue = options.createBalances()
   dailyRevenue.addBalances(treasuryInflows, 'YT And Swap Fees')
