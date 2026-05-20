@@ -1,12 +1,12 @@
 import ADDRESSES from '../helpers/coreAssets.json'
-import { Dependencies, FetchOptions, SimpleAdapter } from "../adapters/types";
+import { FetchOptions, SimpleAdapter } from "../adapters/types";
 import { CHAIN } from "../helpers/chains";
 import { Chain } from "../adapters/types";
 import { addTokensReceived } from "../helpers/token";
 import BigNumber from "bignumber.js";
 import { getConfig } from "../helpers/cache";
 import { ChainApi } from "@defillama/sdk";
-import { queryDuneSql } from "../helpers/dune";
+import { queryIndexer, toByteaArray } from "../helpers/indexer";
 
 const ABI = {
   assetInfo: "function assetInfo() view returns (uint8,address,uint8)",
@@ -209,16 +209,14 @@ const fetch = async (_a: any, _b: any, options: FetchOptions) => {
   // Only track tokens sent from addresses funded by the pendle deployer to the airdrop distributor, matching Pendle's Dune query
   let tokenToDistributor = options.createBalances()
   if (chain === CHAIN.ETHEREUM) {
-    const fundedWallets: { pendle_funded_wallet: string }[] = await queryDuneSql(options, `
+    const fundedWallets: any[] = await queryIndexer(`
       SELECT DISTINCT
-        "to" AS pendle_funded_wallet
+        '0x' || encode(to_address, 'hex') AS pendle_funded_wallet
       FROM ethereum.transactions
-      WHERE "from" = ${PENDLE_DEPLOYER}
-        AND success = true
+      WHERE from_address IN ${toByteaArray([PENDLE_DEPLOYER])}
         AND value > 0
-        AND block_time >= DATE '2022-10-17'
-        AND block_time < from_unixtime(${options.endTimestamp})
-      GROUP BY "to"
+        AND block_time >= '2022-10-17'
+        AND block_time < to_timestamp(${options.endTimestamp})
     `)
     const sources = Array.from(new Set(
       [chainConfig[chain].treasury, ...fundedWallets.map(w => w.pendle_funded_wallet)]
@@ -301,7 +299,6 @@ const adapter: SimpleAdapter = {
   },
   methodology,
   breakdownMethodology,
-  dependencies: [Dependencies.DUNE]
 };
 
 async function getWhitelistedAssets(api: ChainApi): Promise<{
