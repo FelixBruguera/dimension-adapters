@@ -6,7 +6,6 @@ import { addTokensReceived } from "../helpers/token";
 import BigNumber from "bignumber.js";
 import { getConfig } from "../helpers/cache";
 import { ChainApi } from "@defillama/sdk";
-import { queryIndexer, toByteaArray } from "../helpers/indexer";
 
 const ABI = {
   assetInfo: "function assetInfo() view returns (uint8,address,uint8)",
@@ -27,10 +26,8 @@ type IConfig = {
 const STETH_ETHEREUM = "ethereum:" + ADDRESSES.ethereum.STETH;
 const EETH_ETHEREUM = "ethereum:" + ADDRESSES.ethereum.EETH;
 const WETH_ETHEREUM = "ethereum:" + ADDRESSES.ethereum.WETH;
-const USDT_ETHEREUM = "ethereum:" + ADDRESSES.ethereum.USDT;
 
 const AIRDROP_DISTRIBUTOR = '0x3942F7B55094250644cFfDa7160226Caa349A38E'
-const PENDLE_DEPLOYER = '0x1fccc097db89a86bfc474a1028f93958295b1fb7'
 
 const BRIDGED_ASSETS = [
   {
@@ -103,7 +100,7 @@ const chainConfig: IConfig = {
   }
 };
 
-const fetch = async (_a: any, _b: any, options: FetchOptions) => {
+const fetch = async (options: FetchOptions) => {
   const { chain } = options;
   const { api, getLogs } = options;
 
@@ -227,11 +224,11 @@ const fetch = async (_a: any, _b: any, options: FetchOptions) => {
   // Only track tokens sent from addresses funded by the pendle deployer to the airdrop distributor, matching Pendle's Dune query
   let tokenToDistributor = options.createBalances()
   const sources = [chainConfig[chain].treasury, ...(chainConfig[chain].airdropFunders ?? [])]
-    tokenToDistributor = await addTokensReceived({
-      options,
-      target: AIRDROP_DISTRIBUTOR,
-      fromAdddesses: sources,
-    })
+  tokenToDistributor = await addTokensReceived({
+    options,
+    target: AIRDROP_DISTRIBUTOR,
+    fromAdddesses: sources,
+  })
   // }
 
   tokenToDistributor.removeTokenBalance(chainConfig[chain].usdtAddress) // ignore USDT airdrop
@@ -287,20 +284,20 @@ const breakdownMethodology = {
 }
 
 const adapter: SimpleAdapter = {
-  version: 1,
+  version: 2,
   // pullHourly: true,
   fetch,
   adapter: {
     [CHAIN.ETHEREUM]: { start: '2022-11-23' },
     [CHAIN.ARBITRUM]: { start: '2023-03-07' },
-    // [CHAIN.BSC]: { start: '2023-06-28' },
-    // [CHAIN.OPTIMISM]: { start: '2023-08-11' },
-    // [CHAIN.MANTLE]: { start: '2024-04-01' },
-    // [CHAIN.BASE]: { start: '2024-11-12' },
-    // [CHAIN.SONIC]: { start: '2025-02-14' },
-    // [CHAIN.BERACHAIN]: { start: '2025-02-07' }, 
-    // [CHAIN.PLASMA]: { start: '2025-09-24' },
-    // [CHAIN.HYPERLIQUID]: { start: '2025-07-09' }
+    [CHAIN.BSC]: { start: '2023-06-28' },
+    [CHAIN.OPTIMISM]: { start: '2023-08-11' },
+    [CHAIN.MANTLE]: { start: '2024-04-01' },
+    [CHAIN.BASE]: { start: '2024-11-12' },
+    [CHAIN.SONIC]: { start: '2025-02-14' },
+    [CHAIN.BERACHAIN]: { start: '2025-02-07' }, 
+    [CHAIN.PLASMA]: { start: '2025-09-24' },
+    [CHAIN.HYPERLIQUID]: { start: '2025-07-09' }
   },
   methodology,
   breakdownMethodology,
