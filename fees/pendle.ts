@@ -56,6 +56,7 @@ const chainConfig: IConfig = {
     blacklists: [
       '0xe2796707590384430d887f15bdf97c660d95894a',
     ],
+    airdropFunders: ["0x096FBee7b8DFb88993A94c6145211163D2616245"],
   },
   [CHAIN.ARBITRUM]: {
     treasury: "0xcbcb48e22622a3778b6f14c2f5d258ba026b05e6",
@@ -83,7 +84,8 @@ const chainConfig: IConfig = {
     treasury: "0xCbcb48e22622a3778b6F14C2f5d258Ba026b05e6"
   },
   [CHAIN.HYPERLIQUID]: {
-    treasury: "0xCbcb48e22622a3778b6F14C2f5d258Ba026b05e6"
+    treasury: "0xCbcb48e22622a3778b6F14C2f5d258Ba026b05e6",
+    airdropFunders: ["0xeea6F790F18563E91b18DF00B89d9f79b2E6761F"],
   }
 };
 
